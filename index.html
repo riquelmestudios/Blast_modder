@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blast Modder Store</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;500;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+  :root {
+    --red:#e81c1c;--red-glow:rgba(232,28,28,0.5);--bg:#0a0a0a;--bg2:#111;
+    --bg3:#161616;--card:#131313;--border:rgba(232,28,28,0.25);
+    --text:#f0f0f0;--text-muted:#888;--topbar:34px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  ::-webkit-scrollbar{width:5px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--red);border-radius:3px;}
+
+  /* TOP BAR */
+  #topbar{
+    position:fixed;top:0;left:0;right:0;z-index:200;height:var(--topbar);
+    background:rgba(16,0,0,0.96);border-bottom:1px solid rgba(232,28,28,0.3);
+    backdrop-filter:blur(10px);display:flex;align-items:center;
+    justify-content:space-between;padding:0 24px;font-size:11px;letter-spacing:1.5px;
+  }
+  .tb-left{display:flex;align-items:center;gap:8px;color:var(--text-muted);}
+  .tb-left i{color:var(--red);font-size:10px;}
+  .lang-sw{display:flex;gap:4px;}
+  .lang-btn{
+    padding:2px 9px;border-radius:3px;border:1px solid rgba(255,255,255,0.1);
+    background:transparent;color:var(--text-muted);font-size:10px;
+    letter-spacing:1px;font-weight:600;cursor:pointer;transition:all 0.2s;
+    font-family:'Inter',sans-serif;text-transform:uppercase;
+  }
+  .lang-btn.active{background:var(--red);color:#fff;border-color:var(--red);}
+  .lang-btn:hover:not(.active){border-color:var(--red);color:var(--red);}
+
+  /* CANVAS */
+  #bg-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+
+  body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
+  .wrap{position:relative;z-index:1;}
+
+  /* NAV */
+  nav{
+    position:fixed;top:var(--topbar);left:0;right:0;z-index:100;
+    padding:0 40px;height:66px;display:flex;align-items:center;justify-content:space-between;
+    background:rgba(10,10,10,0.93);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);
+  }
+  .nav-logo{display:flex;align-items:center;gap:12px;}
+  .nav-logo img{width:40px;height:40px;border-radius:50%;border:2px solid var(--red);box-shadow:0 0 14px var(--red-glow);object-fit:cover;}
+  .nav-logo span{font-family:'Orbitron',sans-serif;font-weight:700;font-size:15px;letter-spacing:2px;}
+  .nav-logo span em{color:var(--red);font-style:normal;}
+  .nav-links{display:flex;gap:28px;align-items:center;}
+  .nav-links a{text-decoration:none;color:var(--text-muted);font-size:12px;font-weight:500;letter-spacing:1px;text-transform:uppercase;transition:color 0.3s;}
+  .nav-links a:hover{color:var(--red);}
+  .nav-cta{background:var(--red)!important;color:#fff!important;padding:7px 18px;border-radius:4px;box-shadow:0 0 14px var(--red-glow);}
+  .nav-cta:hover{box-shadow:0 0 28px var(--red-glow)!important;}
+
+  /* HERO */
+  .hero{min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:140px 20px 60px;}
+  .hero-inner{max-width:800px;}
+  .hero-badge{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(232,28,28,0.1);border:1px solid var(--border);border-radius:100px;
+    padding:5px 16px;font-size:11px;color:var(--red);font-weight:600;letter-spacing:2px;
+    text-transform:uppercase;margin-bottom:26px;animation:fadeUp 0.6s ease both;
+  }
+  .hero h1{font-family:'Orbitron',sans-serif;font-weight:900;font-size:clamp(40px,7vw,86px);line-height:1;letter-spacing:-2px;margin-bottom:8px;animation:fadeUp 0.6s 0.1s ease both;}
+  .hero h1 span{color:var(--red);text-shadow:0 0 40px var(--red-glow);}
+  .hero-sub{font-family:'Rajdhani',sans-serif;font-size:clamp(16px,3vw,26px);font-weight:600;color:var(--text-muted);letter-spacing:4px;text-transform:uppercase;margin-bottom:22px;animation:fadeUp 0.6s 0.2s ease both;}
+  .hero p{font-size:15px;color:var(--text-muted);max-width:500px;margin:0 auto 36px;line-height:1.7;animation:fadeUp 0.6s 0.3s ease both;}
+  .hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;animation:fadeUp 0.6s 0.4s ease both;}
+  .btn-primary{
+    display:inline-flex;align-items:center;gap:10px;background:var(--red);color:#fff;
+    padding:13px 30px;border-radius:6px;font-family:'Rajdhani',sans-serif;font-weight:700;
+    font-size:15px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border:none;cursor:pointer;
+    box-shadow:0 0 28px var(--red-glow),inset 0 1px 0 rgba(255,255,255,0.1);
+    transition:all 0.3s;position:relative;overflow:hidden;
+  }
+  .btn-primary::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.12),transparent);transition:left 0.5s;}
+  .btn-primary:hover::before{left:100%;}
+  .btn-primary:hover{box-shadow:0 0 48px var(--red-glow);transform:translateY(-2px);}
+  .btn-secondary{display:inline-flex;align-items:center;gap:10px;background:transparent;color:#fff;padding:13px 30px;border-radius:6px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border:1px solid var(--border);cursor:pointer;transition:all 0.3s;}
+  .btn-secondary:hover{border-color:var(--red);color:var(--red);}
+
+  /* STATS */
+  .stats{display:flex;justify-content:center;gap:55px;flex-wrap:wrap;padding:36px 20px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:rgba(232,28,28,0.025);animation:fadeUp 0.6s 0.5s ease both;}
+  .stat{text-align:center;}
+  .stat-num{font-family:'Orbitron',sans-serif;font-weight:700;font-size:30px;color:var(--red);text-shadow:0 0 18px var(--red-glow);}
+  .stat-label{font-size:11px;color:var(--text-muted);letter-spacing:2px;text-transform:uppercase;margin-top:4px;}
+
+  /* SECTION */
+  .section{padding:76px 20px;max-width:1200px;margin:0 auto;}
+  .section-label{display:flex;align-items:center;gap:12px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--red);font-weight:600;margin-bottom:12px;}
+  .section-label::before,.section-label::after{content:'';flex:1;height:1px;background:var(--border);}
+  .section-label::before{max-width:40px;}
+  .section-title{font-family:'Orbitron',sans-serif;font-weight:700;font-size:clamp(26px,4vw,42px);text-align:center;margin-bottom:14px;}
+  .divider{width:60px;height:3px;background:linear-gradient(90deg,var(--red),transparent);margin:0 auto 44px;border-radius:2px;}
+
+  /* PRODUCTS */
+  .products-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px;justify-items:center;}
+  .product-card{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;width:100%;max-width:400px;transition:all 0.4s;position:relative;}
+  .product-card:hover{transform:translateY(-8px);border-color:var(--red);box-shadow:0 20px 55px rgba(232,28,28,0.22);}
+  .product-badge{position:absolute;top:14px;left:14px;z-index:5;background:var(--red);color:#fff;font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border-radius:100px;box-shadow:0 0 14px var(--red-glow);}
+  .product-img-wrap{position:relative;overflow:hidden;height:210px;}
+  .product-img-wrap img{width:100%;height:100%;object-fit:cover;transition:transform 0.6s;}
+  .product-card:hover .product-img-wrap img{transform:scale(1.08);}
+  .product-img-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 35%,rgba(10,10,10,0.9));}
+  .product-body{padding:22px;}
+  .product-name{font-family:'Orbitron',sans-serif;font-weight:700;font-size:16px;color:#fff;margin-bottom:11px;letter-spacing:1px;}
+  .product-tags{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+  .product-tag{display:inline-flex;align-items:center;gap:4px;background:rgba(232,28,28,0.1);border:1px solid rgba(232,28,28,0.3);color:var(--red);font-size:10px;font-weight:600;letter-spacing:1px;padding:2px 9px;border-radius:4px;}
+  .product-tag i{font-size:8px;}
+  .product-price-old{font-size:12px;color:var(--text-muted);text-decoration:line-through;}
+  .product-price{font-family:'Orbitron',sans-serif;font-weight:700;font-size:24px;color:var(--red);}
+  .btn-buy{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:14px;background:var(--red);color:#fff;padding:12px;border-radius:8px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;letter-spacing:2px;text-transform:uppercase;border:none;cursor:pointer;box-shadow:0 4px 18px var(--red-glow);transition:all 0.3s;position:relative;overflow:hidden;}
+  .btn-buy::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.15),transparent);transition:left 0.4s;}
+  .btn-buy:hover::before{left:100%;}
+  .btn-buy:hover{box-shadow:0 6px 28px var(--red-glow);transform:translateY(-1px);}
+
+  /* FEATURES */
+  .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px;}
+  .feature-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:26px;transition:all 0.3s;position:relative;overflow:hidden;}
+  .feature-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--red),transparent);opacity:0;transition:opacity 0.3s;}
+  .feature-card:hover{border-color:var(--red);transform:translateY(-4px);}
+  .feature-card:hover::after{opacity:1;}
+  .feature-icon{width:46px;height:46px;background:rgba(232,28,28,0.1);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;color:var(--red);margin-bottom:14px;transition:all 0.3s;}
+  .feature-card:hover .feature-icon{background:rgba(232,28,28,0.2);box-shadow:0 0 18px var(--red-glow);}
+  .feature-title{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;letter-spacing:1px;margin-bottom:7px;}
+  .feature-desc{font-size:13px;color:var(--text-muted);line-height:1.6;}
+
+  /* FOOTER */
+  footer{border-top:1px solid var(--border);padding:38px 20px;text-align:center;background:rgba(0,0,0,0.5);}
+  footer img{width:46px;height:46px;border-radius:50%;border:2px solid var(--red);margin:0 auto 12px;display:block;object-fit:cover;}
+  footer h3{font-family:'Orbitron',sans-serif;font-size:15px;letter-spacing:2px;margin-bottom:4px;}
+  .footer-dev{margin-top:20px;font-size:11px;color:rgba(255,255,255,0.18);letter-spacing:1px;}
+  .footer-dev span{color:var(--red);}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.88);backdrop-filter:blur(14px);display:none;align-items:center;justify-content:center;padding:20px;}
+  .modal-overlay.active{display:flex;animation:fadeIn 0.25s;}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .modal-box{background:var(--bg3);border:1px solid var(--border);border-radius:20px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;animation:slideUp 0.4s cubic-bezier(0.34,1.56,0.64,1);}
+  .modal-box.sm{max-width:440px;}
+  @keyframes slideUp{from{opacity:0;transform:translateY(40px) scale(0.95)}to{opacity:1;transform:translateY(0) scale(1)}}
+  .modal-head{padding:22px 22px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg3);z-index:10;}
+  .modal-head h2{font-family:'Orbitron',sans-serif;font-size:13px;letter-spacing:2px;display:flex;align-items:center;gap:9px;}
+  .modal-head h2 i{color:var(--red);}
+  .close-btn{width:32px;height:32px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;color:var(--text-muted);transition:all 0.3s;}
+  .close-btn:hover{background:rgba(232,28,28,0.15);border-color:var(--red);color:var(--red);}
+  .modal-body{padding:22px;}
+  .modal-subtitle{font-size:12px;color:var(--text-muted);margin-bottom:20px;}
+  .form-group{margin-bottom:13px;}
+  .form-label{display:block;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;font-weight:600;}
+  .form-input{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:#fff;font-size:13px;font-family:'Inter',sans-serif;transition:all 0.3s;outline:none;}
+  .form-input:focus{border-color:var(--red);box-shadow:0 0 12px rgba(232,28,28,0.18);}
+  .form-input::placeholder{color:rgba(255,255,255,0.18);}
+  .coupon-row{display:flex;gap:9px;}
+  .coupon-row .form-input{flex:1;}
+  .btn-coupon{background:rgba(232,28,28,0.1);border:1px solid var(--border);color:var(--red);padding:10px 14px;border-radius:8px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:1px;cursor:pointer;white-space:nowrap;transition:all 0.3s;}
+  .btn-coupon:hover{background:rgba(232,28,28,0.2);border-color:var(--red);}
+  .cart-items-box{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;margin:16px 0;}
+  .cart-items-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:13px;}
+  .cart-item{display:flex;gap:13px;align-items:center;}
+  .cart-item img{width:50px;height:50px;border-radius:8px;object-fit:cover;border:1px solid var(--border);}
+  .cart-item-info{flex:1;}
+  .cart-item-name{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;letter-spacing:1px;}
+  .cart-item-tags{display:flex;gap:5px;margin-top:4px;flex-wrap:wrap;}
+  .cart-item-tag{font-size:9px;color:var(--red);background:rgba(232,28,28,0.1);border:1px solid rgba(232,28,28,0.2);padding:2px 6px;border-radius:3px;letter-spacing:1px;}
+  .cart-item-price{font-family:'Orbitron',sans-serif;font-weight:700;font-size:14px;color:var(--red);}
+  .total-row{display:flex;justify-content:space-between;font-size:13px;color:var(--text-muted);padding:5px 0;}
+  .total-row.main{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:17px;color:#fff;border-top:1px solid var(--border);padding-top:11px;margin-top:5px;}
+  .total-row.main .t-price{color:var(--red);font-family:'Orbitron',sans-serif;font-size:19px;}
+  .security-badge{display:flex;align-items:center;gap:7px;background:rgba(0,180,80,0.05);border:1px solid rgba(0,180,80,0.2);border-radius:8px;padding:9px 12px;font-size:11px;color:rgba(0,210,100,0.8);margin:13px 0;}
+  .msg-ok{display:none;font-size:11px;color:#4caf50;margin-top:4px;}
+  .msg-ok.show{display:block;}
+  .msg-err{display:none;font-size:11px;color:var(--red);margin-top:4px;}
+  .msg-err.show{display:block;}
+  .btn-wpp{display:flex;align-items:center;justify-content:center;gap:11px;width:100%;background:linear-gradient(135deg,#25d366,#128c7e);color:#fff;padding:14px;border-radius:10px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;letter-spacing:2px;text-transform:uppercase;border:none;cursor:pointer;box-shadow:0 4px 18px rgba(37,211,102,0.3);transition:all 0.3s;}
+  .btn-wpp:hover{box-shadow:0 6px 28px rgba(37,211,102,0.5);transform:translateY(-2px);}
+  .btn-wpp i{font-size:19px;}
+  .wpp-note{background:rgba(37,211,102,0.05);border:1px solid rgba(37,211,102,0.15);border-radius:9px;padding:13px;margin-bottom:16px;font-size:12px;color:rgba(255,255,255,0.6);}
+  .wpp-note strong{color:rgba(37,211,102,0.9);}
+  .summary-box{background:rgba(232,28,28,0.04);border:1px solid var(--border);border-radius:10px;padding:14px;margin:14px 0;}
+  .summary-box-title{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:9px;}
+  .summary-row{display:flex;justify-content:space-between;font-size:13px;color:var(--text-muted);padding:3px 0;}
+  .summary-row.main{border-top:1px solid var(--border);padding-top:9px;margin-top:5px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:16px;color:#fff;}
+  .summary-row.main span:last-child{color:var(--red);font-family:'Orbitron',sans-serif;font-size:17px;}
+
+  /* TOAST */
+  .toast{position:fixed;bottom:22px;right:22px;z-index:9999;background:var(--card);border:1px solid var(--red);border-radius:9px;padding:11px 16px;display:flex;align-items:center;gap:9px;font-size:12px;box-shadow:0 8px 28px rgba(0,0,0,0.5);transform:translateX(120%);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);max-width:260px;}
+  .toast.show{transform:translateX(0);}
+  .toast i{color:var(--red);}
+
+  /* ANIMS */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .fade-up{opacity:0;transform:translateY(28px);transition:all 0.6s ease;}
+  .fade-up.visible{opacity:1;transform:translateY(0);}
+
+  @media(max-width:640px){
+    nav{padding:0 16px;}
+    .nav-links{display:none;}
+    .section{padding:56px 14px;}
+    .stats{gap:24px;}
+    .modal-body{padding:14px;}
+    .modal-head{padding:14px 14px 13px;}
+    #topbar{padding:0 14px;}
+    .tb-left span{display:none;}
+  }
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="tb-left">
+    <i class="fas fa-globe"></i>
+    <span data-i18n="topbar_text">Loja Oficial — Produtos Premium</span>
+  </div>
+  <div class="lang-sw">
+    <button class="lang-btn active" onclick="setLang('pt')" id="btn-pt">PT</button>
+    <button class="lang-btn" onclick="setLang('en')" id="btn-en">EN</button>
+    <button class="lang-btn" onclick="setLang('hi')" id="btn-hi">HI</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <img src="https://i.postimg.cc/5NmJqtNf/Picsart-26-02-19-22-07-15-399.jpg" alt="Blast Modder">
+    <span>BLAST <em>MODDER</em></span>
+  </div>
+  <div class="nav-links">
+    <a href="#produtos" data-i18n="nav_products">Produtos</a>
+    <a href="#recursos" data-i18n="nav_features">Recursos</a>
+    <a href="#produtos" class="nav-cta"><i class="fas fa-bolt"></i> <span data-i18n="nav_buy">Comprar</span></a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge"><i class="fas fa-shield-halved"></i> <span data-i18n="hero_badge">Anti-Ban Permanente • Suporte 24/7</span></div>
+    <h1>BLAST<br><span>MODDER</span></h1>
+    <div class="hero-sub" data-i18n="hero_sub">Store Premium</div>
+    <p data-i18n="hero_desc">Ferramentas profissionais com proteção avançada, atualizações permanentes e suporte especializado 24 horas por dia.</p>
+    <div class="hero-btns">
+      <a href="#produtos" class="btn-primary"><i class="fas fa-rocket"></i> <span data-i18n="hero_btn1">Ver Produtos</span></a>
+      <a href="https://wa.me/5512988169644" target="_blank" class="btn-secondary"><i class="fab fa-whatsapp"></i> <span data-i18n="hero_btn2">Suporte</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats fade-up">
+  <div class="stat"><div class="stat-num" data-target="500" data-suffix="+">0+</div><div class="stat-label" data-i18n="stat1">Clientes Ativos</div></div>
+  <div class="stat"><div class="stat-num" data-target="99" data-suffix="%">0%</div><div class="stat-label" data-i18n="stat2">Satisfação</div></div>
+  <div class="stat"><div class="stat-num">24/7</div><div class="stat-label" data-i18n="stat3">Suporte Online</div></div>
+  <div class="stat"><div class="stat-num" data-target="100" data-suffix="%">0%</div><div class="stat-label" data-i18n="stat4">Anti-Ban</div></div>
+</div>
+
+<!-- PRODUCTS -->
+<section class="section" id="produtos">
+  <div class="section-label" data-i18n="sec_products_label">Nossos Produtos</div>
+  <h2 class="section-title fade-up"><span data-i18n="sec_p1">Escolha Seu</span> <span style="color:var(--red)" data-i18n="sec_p2">Produto</span></h2>
+  <div class="divider"></div>
+  <div class="products-grid fade-up">
+
+    <!-- BLAST INJECTOR -->
+    <div class="product-card">
+      <div class="product-badge"><i class="fas fa-star" style="font-size:8px;margin-right:3px"></i><span data-i18n="badge_highlight">Destaque</span></div>
+      <div class="product-img-wrap">
+        <img src="https://i.postimg.cc/kXNJ1cwP/Picsart-26-02-21-11-30-22-751.jpg" alt="BLAST INJECTOR">
+        <div class="product-img-overlay"></div>
+      </div>
+      <div class="product-body">
+        <div class="product-name">BLAST INJECTOR</div>
+        <div class="product-tags">
+          <div class="product-tag"><i class="fas fa-shield-halved"></i> Anti-Ban</div>
+          <div class="product-tag"><i class="fas fa-infinity"></i> <span data-i18n="tag_perm">Permanente</span></div>
+          <div class="product-tag"><i class="fas fa-headset"></i> <span data-i18n="tag_supp">Suporte</span></div>
+        </div>
+        <div class="product-price-old"><span data-i18n="from">De</span> R$ 44,99</div>
+        <div class="product-price">R$ 24,99</div>
+        <button class="btn-buy" onclick="openCart('BLAST INJECTOR','24.99','44.99','https://i.postimg.cc/kXNJ1cwP/Picsart-26-02-21-11-30-22-751.jpg',['Anti-Ban','Permanente','Suporte'])">
+          <i class="fas fa-shopping-cart"></i> <span data-i18n="buy_now">Comprar Agora</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- REGEDIT EM ARQUIVO -->
+    <div class="product-card">
+      <div class="product-badge"><i class="fas fa-file-code" style="font-size:8px;margin-right:3px"></i> VIP</div>
+      <div class="product-img-wrap">
+        <img src="https://i.postimg.cc/G2p79NF3/920403787-regedit-qualquer-emulador-E26V.webp" alt="Regedit Em Arquivo">
+        <div class="product-img-overlay"></div>
+      </div>
+      <div class="product-body">
+        <div class="product-name">REGEDIT EM ARQUIVO</div>
+        <div class="product-tags">
+          <div class="product-tag"><i class="fas fa-shield-halved"></i> Anti-Ban</div>
+          <div class="product-tag"><i class="fas fa-gem"></i> <span data-i18n="tag_vip">Arquivo VIP</span></div>
+          <div class="product-tag"><i class="fas fa-lock"></i> <span data-i18n="tag_excl">Exclusivo</span></div>
+        </div>
+        <div class="product-price-old"><span data-i18n="from">De</span> R$ 27,99</div>
+        <div class="product-price">R$ 14,99</div>
+        <button class="btn-buy" onclick="openCart('Regedit Em Arquivo','14.99','27.99','https://i.postimg.cc/G2p79NF3/920403787-regedit-qualquer-emulador-E26V.webp',['Anti-Ban','Arquivo VIP','Exclusivo'])">
+          <i class="fas fa-shopping-cart"></i> <span data-i18n="buy_now">Comprar Agora</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- HS PESCOÇO LITE -->
+    <div class="product-card">
+      <div class="product-badge"><i class="fas fa-crosshairs" style="font-size:8px;margin-right:3px"></i> LITE</div>
+      <div class="product-img-wrap">
+        <img src="https://i.postimg.cc/m2MsbzZP/03c3a0184a68bce232c6c37f274550c0.png" alt="Hs Pescoço Lite">
+        <div class="product-img-overlay"></div>
+      </div>
+      <div class="product-body">
+        <div class="product-name">HS PESCOÇO LITE</div>
+        <div class="product-tags">
+          <div class="product-tag"><i class="fas fa-shield-halved"></i> Anti-Ban</div>
+          <div class="product-tag"><i class="fas fa-check-double"></i> <span data-i18n="tag_legit">Legítimo</span></div>
+          <div class="product-tag"><i class="fas fa-lock"></i> <span data-i18n="tag_excl">Exclusivo</span></div>
+        </div>
+        <div class="product-price-old"><span data-i18n="from">De</span> R$ 17,99</div>
+        <div class="product-price">R$ 15,00</div>
+        <button class="btn-buy" onclick="openCart('Hs Pescoço Lite','15.00','17.99','https://i.postimg.cc/m2MsbzZP/03c3a0184a68bce232c6c37f274550c0.png',['Anti-Ban','Legítimo','Exclusivo'])">
+          <i class="fas fa-shopping-cart"></i> <span data-i18n="buy_now">Comprar Agora</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section" id="recursos">
+  <div class="section-label" data-i18n="sec_feat_label">Diferenciais</div>
+  <h2 class="section-title fade-up"><span data-i18n="sec_f1">Por Que</span> <span style="color:var(--red)" data-i18n="sec_f2">Nos Escolher?</span></h2>
+  <div class="divider"></div>
+  <div class="features-grid fade-up">
+    <div class="feature-card"><div class="feature-icon"><i class="fas fa-shield-halved"></i></div><div class="feature-title" data-i18n="f1t">Proteção Anti-Ban</div><div class="feature-desc" data-i18n="f1d">Tecnologia avançada de proteção permanente que mantém sua conta segura contra detecções automáticas.</div></div>
+    <div class="feature-card"><div class="feature-icon"><i class="fas fa-rotate"></i></div><div class="feature-title" data-i18n="f2t">Atualizações Grátis</div><div class="feature-desc" data-i18n="f2d">Receba todas as atualizações automaticamente sem custo adicional, sempre na versão mais recente.</div></div>
+    <div class="feature-card"><div class="feature-icon"><i class="fas fa-headset"></i></div><div class="feature-title" data-i18n="f3t">Suporte 24/7</div><div class="feature-desc" data-i18n="f3d">Equipe especializada disponível 24h por dia, 7 dias por semana para resolver qualquer dúvida.</div></div>
+    <div class="feature-card"><div class="feature-icon"><i class="fas fa-bolt"></i></div><div class="feature-title" data-i18n="f4t">Entrega Imediata</div><div class="feature-desc" data-i18n="f4d">Receba seu produto instantaneamente após a confirmação do pagamento, sem nenhuma espera.</div></div>
+    <div class="feature-card"><div class="feature-icon"><i class="fas fa-lock"></i></div><div class="feature-title" data-i18n="f5t">Anti-Golpes</div><div class="feature-desc" data-i18n="f5d">Sistema ativo de proteção contra golpes. Pagamento verificado manualmente antes de qualquer liberação.</div></div>
+    <div class="feature-card"><div class="feature-icon"><i class="fas fa-trophy"></i></div><div class="feature-title" data-i18n="f6t">Qualidade Premium</div><div class="feature-desc" data-i18n="f6d">Produtos testados e aprovados por centenas de usuários satisfeitos em todo o Brasil.</div></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <img src="https://i.postimg.cc/5NmJqtNf/Picsart-26-02-19-22-07-15-399.jpg" alt="Blast Modder">
+  <h3>BLAST MODDER STORE</h3>
+  <p style="color:var(--text-muted);font-size:12px;margin-top:4px;" data-i18n="footer_sub">Loja Premium Oficial</p>
+  <div style="margin-top:16px;display:flex;justify-content:center;">
+    <a href="https://wa.me/5512988169644" target="_blank" style="color:var(--text-muted);font-size:19px;transition:color 0.3s" onmouseover="this.style.color='#25d366'" onmouseout="this.style.color='var(--text-muted)'"><i class="fab fa-whatsapp"></i></a>
+  </div>
+  <div class="footer-dev">Desenvolvimento by <span>Riquelme_Developer</span></div>
+</footer>
+
+</div><!-- /wrap -->
+
+<!-- CART MODAL -->
+<div class="modal-overlay" id="cartModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h2><i class="fas fa-shopping-cart"></i> BLAST MODDER</h2>
+      <div class="close-btn" onclick="closeModal('cartModal')"><i class="fas fa-xmark"></i></div>
+    </div>
+    <div class="modal-body">
+      <p class="modal-subtitle" data-i18n="cart_sub">Carrinho de compras — Nesta página você encontra os produtos adicionados ao seu carrinho.</p>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-envelope" style="color:var(--red);font-size:8px;margin-right:4px"></i> <span data-i18n="lbl_email">Informe seu e-mail</span></label>
+        <input type="email" class="form-input" id="emailInput" placeholder="seu@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-envelope" style="color:var(--red);font-size:8px;margin-right:4px"></i> <span data-i18n="lbl_email2">Informe novamente seu e-mail</span></label>
+        <input type="email" class="form-input" id="emailConfirm" placeholder="confirme o e-mail">
+        <div class="msg-err" id="emailErr"><i class="fas fa-circle-exclamation"></i> <span data-i18n="err_email">Os e-mails não correspondem</span></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-tag" style="color:var(--red);font-size:8px;margin-right:4px"></i> <span data-i18n="lbl_coupon">Cupom de desconto</span></label>
+        <div class="coupon-row">
+          <input type="text" class="form-input" id="couponInput" placeholder="Insira seu cupom">
+          <button class="btn-coupon" onclick="applyCoupon()"><i class="fas fa-check"></i> <span data-i18n="btn_apply">Aplicar</span></button>
+        </div>
+        <div class="msg-ok" id="discountOk"><i class="fas fa-circle-check"></i> <span data-i18n="coupon_ok">Cupom aplicado! 5% de desconto</span></div>
+        <div class="msg-err" id="couponErr"><i class="fas fa-circle-xmark"></i> <span data-i18n="coupon_err">Cupom inválido ou expirado</span></div>
+      </div>
+      <div class="cart-items-box">
+        <div class="cart-items-title"><i class="fas fa-box" style="color:var(--red);font-size:8px;margin-right:4px"></i> <span data-i18n="cart_items">Produtos no carrinho — 1 item</span></div>
+        <div class="cart-item">
+          <img id="cartImg" src="" alt="">
+          <div class="cart-item-info">
+            <div class="cart-item-name" id="cartItemName">—</div>
+            <div class="cart-item-tags" id="cartItemTags"></div>
+          </div>
+          <div class="cart-item-price" id="cartItemPrice">—</div>
+        </div>
+      </div>
+      <div class="total-row"><span data-i18n="subtotal">Subtotal</span><span id="subtotalVal">—</span></div>
+      <div class="total-row" id="discountRow" style="display:none;color:#4caf50"><span><i class="fas fa-tag"></i> <span data-i18n="discount">Desconto (5%)</span></span><span id="discountVal">—</span></div>
+      <div class="total-row main"><span data-i18n="total">Total</span><span class="t-price" id="totalVal">—</span></div>
+      <div class="security-badge"><i class="fas fa-lock"></i> <span data-i18n="security">Sistema contra golpes ativo — pagamento verificado antes da liberação</span></div>
+      <button class="btn-buy" style="font-size:15px;padding:14px;" onclick="goToPayment()">
+        <i class="fas fa-credit-card"></i> <span data-i18n="btn_checkout">Finalizar Compra</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- PAY MODAL -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal-box sm">
+    <div class="modal-head">
+      <h2><i class="fas fa-user"></i> <span data-i18n="pay_title">SUAS INFORMAÇÕES</span></h2>
+      <div class="close-btn" onclick="closeModal('payModal')"><i class="fas fa-xmark"></i></div>
+    </div>
+    <div class="modal-body">
+      <div class="wpp-note">
+        <strong><i class="fab fa-whatsapp"></i> <span data-i18n="wpp_title">Compra via WhatsApp</span></strong><br>
+        <span data-i18n="wpp_desc">Preencha seus dados. Ao finalizar, o WhatsApp será aberto com todas as informações do pedido automaticamente.</span>
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-user" style="color:var(--red);font-size:8px;margin-right:4px"></i> <span data-i18n="lbl_name">Nome completo</span></label>
+        <input type="text" class="form-input" id="payName" placeholder="Seu nome completo">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-phone" style="color:var(--red);font-size:8px;margin-right:4px"></i> <span data-i18n="lbl_phone">Número (WhatsApp)</span></label>
+        <input type="tel" class="form-input" id="payPhone" placeholder="+55 00 00000-0000">
+      </div>
+      <div class="form-group">
+        <label class="form-label"><i class="fas fa-envelope" style="color:var(--red);font-size:8px;margin-right:4px"></i> E-mail</label>
+        <input type="email" class="form-input" id="payEmail" readonly>
+      </div>
+      <div class="summary-box">
+        <div class="summary-box-title"><i class="fas fa-receipt" style="color:var(--red);font-size:8px;margin-right:4px"></i> <span data-i18n="order_summary">Resumo do Pedido</span></div>
+        <div class="summary-row"><span data-i18n="product">Produto</span><span id="summaryProduct" style="color:#fff;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px">—</span></div>
+        <div class="summary-row main"><span data-i18n="total">Total</span><span id="payTotal">—</span></div>
+      </div>
+      <button class="btn-wpp" onclick="finalizeWhatsApp()">
+        <i class="fab fa-whatsapp"></i> <span data-i18n="btn_wpp">Finalizar pelo WhatsApp</span>
+      </button>
+      <div style="text-align:center;margin-top:9px;font-size:10px;color:rgba(255,255,255,0.18);letter-spacing:1px" data-i18n="wpp_redirect">VOCÊ SERÁ REDIRECIONADO AO WHATSAPP</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="fas fa-circle-check"></i><span id="toastMsg">OK</span></div>
+
+<script>
+// ===== TRANSLATIONS =====
+const LANGS = {
+  pt:{
+    topbar_text:'Loja Oficial — Produtos Premium',nav_products:'Produtos',nav_features:'Recursos',nav_buy:'Comprar',
+    hero_badge:'Anti-Ban Permanente • Suporte 24/7',hero_sub:'Store Premium',
+    hero_desc:'Ferramentas profissionais com proteção avançada, atualizações permanentes e suporte especializado 24 horas por dia.',
+    hero_btn1:'Ver Produtos',hero_btn2:'Suporte',
+    stat1:'Clientes Ativos',stat2:'Satisfação',stat3:'Suporte Online',stat4:'Anti-Ban',
+    sec_products_label:'Nossos Produtos',sec_p1:'Escolha Seu',sec_p2:'Produto',
+    badge_highlight:'Destaque',tag_perm:'Permanente',tag_supp:'Suporte',tag_vip:'Arquivo VIP',tag_excl:'Exclusivo',tag_legit:'Legítimo',from:'De',buy_now:'Comprar Agora',
+    sec_feat_label:'Diferenciais',sec_f1:'Por Que',sec_f2:'Nos Escolher?',
+    f1t:'Proteção Anti-Ban',f1d:'Tecnologia avançada de proteção permanente que mantém sua conta segura contra detecções automáticas.',
+    f2t:'Atualizações Grátis',f2d:'Receba todas as atualizações automaticamente sem custo adicional, sempre na versão mais recente.',
+    f3t:'Suporte 24/7',f3d:'Equipe especializada disponível 24h por dia, 7 dias por semana para resolver qualquer dúvida.',
+    f4t:'Entrega Imediata',f4d:'Receba seu produto instantaneamente após a confirmação do pagamento, sem nenhuma espera.',
+    f5t:'Anti-Golpes',f5d:'Sistema ativo de proteção contra golpes. Pagamento verificado manualmente antes de qualquer liberação.',
+    f6t:'Qualidade Premium',f6d:'Produtos testados e aprovados por centenas de usuários satisfeitos em todo o Brasil.',
+    footer_sub:'Loja Premium Oficial',
+    cart_sub:'Carrinho de compras — Nesta página você encontra os produtos adicionados ao seu carrinho.',
+    lbl_email:'Informe seu e-mail',lbl_email2:'Informe novamente seu e-mail',err_email:'Os e-mails não correspondem',
+    lbl_coupon:'Cupom de desconto',btn_apply:'Aplicar',coupon_ok:'Cupom aplicado! 5% de desconto',coupon_err:'Cupom inválido ou expirado',
+    cart_items:'Produtos no carrinho — 1 item',subtotal:'Subtotal',discount:'Desconto (5%)',total:'Total',
+    security:'Sistema contra golpes ativo — pagamento verificado antes da liberação',btn_checkout:'Finalizar Compra',
+    pay_title:'SUAS INFORMAÇÕES',wpp_title:'Compra via WhatsApp',
+    wpp_desc:'Preencha seus dados. Ao finalizar, o WhatsApp será aberto com todas as informações do pedido automaticamente.',
+    lbl_name:'Nome completo',lbl_phone:'Número (WhatsApp)',order_summary:'Resumo do Pedido',product:'Produto',
+    btn_wpp:'Finalizar pelo WhatsApp',wpp_redirect:'VOCÊ SERÁ REDIRECIONADO AO WHATSAPP',
+  },
+  en:{
+    topbar_text:'Official Store — Premium Products',nav_products:'Products',nav_features:'Features',nav_buy:'Buy',
+    hero_badge:'Permanent Anti-Ban • 24/7 Support',hero_sub:'Premium Store',
+    hero_desc:'Professional tools with advanced protection, permanent updates and specialized support 24 hours a day.',
+    hero_btn1:'View Products',hero_btn2:'Support',
+    stat1:'Active Clients',stat2:'Satisfaction',stat3:'Online Support',stat4:'Anti-Ban',
+    sec_products_label:'Our Products',sec_p1:'Choose Your',sec_p2:'Product',
+    badge_highlight:'Featured',tag_perm:'Permanent',tag_supp:'Support',tag_vip:'VIP File',tag_excl:'Exclusive',tag_legit:'Legitimate',from:'From',buy_now:'Buy Now',
+    sec_feat_label:'Highlights',sec_f1:'Why',sec_f2:'Choose Us?',
+    f1t:'Anti-Ban Protection',f1d:'Advanced permanent protection technology that keeps your account safe from automatic detections.',
+    f2t:'Free Updates',f2d:'Receive all updates automatically at no extra cost, always on the latest version.',
+    f3t:'24/7 Support',f3d:'Specialized team available 24 hours a day, 7 days a week to resolve any question.',
+    f4t:'Instant Delivery',f4d:'Receive your product instantly after payment confirmation, no waiting.',
+    f5t:'Anti-Scam',f5d:'Active scam protection system. Payment manually verified before any release.',
+    f6t:'Premium Quality',f6d:'Products tested and approved by hundreds of satisfied users across Brazil.',
+    footer_sub:'Official Premium Store',
+    cart_sub:'Shopping cart — On this page you find the products added to your cart.',
+    lbl_email:'Enter your email',lbl_email2:'Confirm your email',err_email:'Emails do not match',
+    lbl_coupon:'Discount coupon',btn_apply:'Apply',coupon_ok:'Coupon applied! 5% discount',coupon_err:'Invalid or expired coupon',
+    cart_items:'Cart items — 1 item',subtotal:'Subtotal',discount:'Discount (5%)',total:'Total',
+    security:'Active anti-scam system — payment verified before release',btn_checkout:'Checkout',
+    pay_title:'YOUR INFORMATION',wpp_title:'Purchase via WhatsApp',
+    wpp_desc:'Fill in your details. When finished, WhatsApp will open with all order information automatically.',
+    lbl_name:'Full name',lbl_phone:'Number (WhatsApp)',order_summary:'Order Summary',product:'Product',
+    btn_wpp:'Finish on WhatsApp',wpp_redirect:'YOU WILL BE REDIRECTED TO WHATSAPP',
+  },
+  hi:{
+    topbar_text:'आधिकारिक स्टोर — प्रीमियम उत्पाद',nav_products:'उत्पाद',nav_features:'सुविधाएं',nav_buy:'खरीदें',
+    hero_badge:'स्थायी एंटी-बैन • 24/7 सहायता',hero_sub:'प्रीमियम स्टोर',
+    hero_desc:'उन्नत सुरक्षा, स्थायी अपडेट और 24 घंटे विशेषज्ञ सहायता के साथ पेशेवर उपकरण।',
+    hero_btn1:'उत्पाद देखें',hero_btn2:'सहायता',
+    stat1:'सक्रिय ग्राहक',stat2:'संतुष्टि',stat3:'ऑनलाइन सहायता',stat4:'एंटी-बैन',
+    sec_products_label:'हमारे उत्पाद',sec_p1:'अपना',sec_p2:'उत्पाद चुनें',
+    badge_highlight:'विशेष',tag_perm:'स्थायी',tag_supp:'सहायता',tag_vip:'VIP फ़ाइल',tag_excl:'एक्सक्लूसिव',tag_legit:'वैध',from:'से',buy_now:'अभी खरीदें',
+    sec_feat_label:'विशेषताएं',sec_f1:'हमें क्यों',sec_f2:'चुनें?',
+    f1t:'एंटी-बैन सुरक्षा',f1d:'उन्नत सुरक्षा तकनीक जो आपके खाते को स्वचालित पहचान से सुरक्षित रखती है।',
+    f2t:'मुफ़्त अपडेट',f2d:'बिना किसी अतिरिक्त लागत के स्वचालित रूप से सभी अपडेट प्राप्त करें।',
+    f3t:'24/7 सहायता',f3d:'विशेषज्ञ टीम दिन के 24 घंटे, सप्ताह के 7 दिन उपलब्ध है।',
+    f4t:'तत्काल डिलीवरी',f4d:'भुगतान की पुष्टि के तुरंत बाद अपना उत्पाद प्राप्त करें।',
+    f5t:'धोखा-विरोधी',f5d:'सक्रिय धोखा-विरोधी प्रणाली। किसी भी रिलीज से पहले भुगतान मैन्युअल रूप से सत्यापित।',
+    f6t:'प्रीमियम गुणवत्ता',f6d:'सैकड़ों संतुष्ट उपयोगकर्ताओं द्वारा परीक्षण और अनुमोदित उत्पाद।',
+    footer_sub:'आधिकारिक प्रीमियम स्टोर',
+    cart_sub:'शॉपिंग कार्ट — इस पृष्ठ पर आपको कार्ट में जोड़े गए उत्पाद मिलेंगे।',
+    lbl_email:'अपना ईमेल दर्ज करें',lbl_email2:'ईमेल की पुष्टि करें',err_email:'ईमेल मेल नहीं खाते',
+    lbl_coupon:'छूट कूपन',btn_apply:'लागू करें',coupon_ok:'कूपन लागू! 5% छूट',coupon_err:'अमान्य या समाप्त कूपन',
+    cart_items:'कार्ट आइटम — 1 आइटम',subtotal:'उप-कुल',discount:'छूट (5%)',total:'कुल',
+    security:'सक्रिय धोखा-विरोधी प्रणाली — रिलीज से पहले भुगतान सत्यापित',btn_checkout:'चेकआउट',
+    pay_title:'आपकी जानकारी',wpp_title:'WhatsApp के माध्यम से खरीद',
+    wpp_desc:'अपना विवरण भरें। समाप्त होने पर, WhatsApp स्वचालित रूप से सभी ऑर्डर जानकारी के साथ खुलेगा।',
+    lbl_name:'पूरा नाम',lbl_phone:'नंबर (WhatsApp)',order_summary:'ऑर्डर सारांश',product:'उत्पाद',
+    btn_wpp:'WhatsApp पर समाप्त करें',wpp_redirect:'आपको WHATSAPP पर पुनः निर्देशित किया जाएगा',
+  }
+};
+let currentLang='pt';
+function setLang(lang){
+  currentLang=lang;
+  ['pt','en','hi'].forEach(l=>document.getElementById('btn-'+l).classList.toggle('active',l===lang));
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(LANGS[lang][k])el.textContent=LANGS[lang][k];});
+}
+
+// ===== BACKGROUND =====
+const canvas=document.getElementById('bg-canvas');
+const ctx=canvas.getContext('2d');
+let W,H;
+function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+resize();window.addEventListener('resize',resize);
+
+class Spark{
+  constructor(init){this.type=Math.random()<0.65?'dot':'orb';this.reset(init);}
+  reset(init){
+    this.x=Math.random()*W;
+    this.y=init?Math.random()*H:H+8;
+    this.r=this.type==='orb'?Math.random()*2.5+1:Math.random()*1+0.2;
+    this.alpha=this.type==='orb'?Math.random()*0.18+0.04:Math.random()*0.45+0.08;
+    this.vx=(Math.random()-0.5)*0.28;
+    this.vy=-(Math.random()*0.38+0.06);
+    this.life=init?Math.random():1;
+    this.decay=0.001+Math.random()*0.003;
+    this.pulse=Math.random()*Math.PI*2;
+  }
+  update(){this.x+=this.vx;this.y+=this.vy;this.life-=this.decay;this.pulse+=0.05;if(this.life<=0)this.reset(false);}
+  draw(){
+    const a=this.alpha*Math.max(0,this.life)*(this.type==='orb'?(0.6+0.4*Math.sin(this.pulse)):1);
+    ctx.save();ctx.globalAlpha=a;
+    if(this.type==='orb'){
+      const g=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*4);
+      g.addColorStop(0,'#ff3333');g.addColorStop(1,'rgba(232,28,28,0)');
+      ctx.fillStyle=g;ctx.beginPath();ctx.arc(this.x,this.y,this.r*4,0,Math.PI*2);ctx.fill();
+    }else{
+      ctx.fillStyle='#e81c1c';ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+class Node{
+  constructor(){this.x=Math.random()*W;this.y=Math.random()*H;this.vx=(Math.random()-0.5)*0.12;this.vy=(Math.random()-0.5)*0.12;}
+  update(){this.x+=this.vx;this.y+=this.vy;if(this.x<0||this.x>W)this.vx*=-1;if(this.y<0||this.y>H)this.vy*=-1;}
+}
+
+const sparks=Array.from({length:200},(_,i)=>new Spark(true));
+const nodes=Array.from({length:45},()=>new Node());
+let glowT=0;
+
+function animBg(){
+  ctx.clearRect(0,0,W,H);glowT+=0.006;
+
+  // grid
+  ctx.save();ctx.strokeStyle='rgba(232,28,28,0.03)';ctx.lineWidth=1;
+  for(let x=0;x<=W;x+=80){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<=H;y+=80){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  ctx.restore();
+
+  // glow 1
+  const gx=W/2+Math.cos(glowT)*140,gy=H*.28+Math.sin(glowT*.65)*70;
+  const g=ctx.createRadialGradient(gx,gy,0,gx,gy,620);
+  g.addColorStop(0,'rgba(232,28,28,0.09)');g.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+
+  // glow 2
+  const gx2=W*.8+Math.sin(glowT*1.1)*90,gy2=H*.72;
+  const g2=ctx.createRadialGradient(gx2,gy2,0,gx2,gy2,380);
+  g2.addColorStop(0,'rgba(180,10,10,0.055)');g2.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.fillStyle=g2;ctx.fillRect(0,0,W,H);
+
+  // connection network
+  nodes.forEach(n=>n.update());
+  ctx.save();
+  for(let i=0;i<nodes.length;i++){
+    for(let j=i+1;j<nodes.length;j++){
+      const dx=nodes[i].x-nodes[j].x,dy=nodes[i].y-nodes[j].y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      if(d<170){ctx.globalAlpha=(1-d/170)*0.08;ctx.strokeStyle='#e81c1c';ctx.lineWidth=0.5;ctx.beginPath();ctx.moveTo(nodes[i].x,nodes[i].y);ctx.lineTo(nodes[j].x,nodes[j].y);ctx.stroke();}
+    }
+  }
+  ctx.restore();
+
+  sparks.forEach(s=>{s.update();s.draw();});
+  requestAnimationFrame(animBg);
+}
+animBg();
+
+// ===== SCROLL REVEAL =====
+const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:0.1});
+document.querySelectorAll('.fade-up').forEach(el=>obs.observe(el));
+
+// ===== COUNTERS =====
+let counted=false;
+const statsObs=new IntersectionObserver(entries=>{
+  if(entries[0].isIntersecting&&!counted){
+    counted=true;
+    document.querySelectorAll('[data-target]').forEach(el=>{
+      const target=parseInt(el.dataset.target),suffix=el.dataset.suffix||'';
+      let cur=0;const step=target/60;
+      const t=setInterval(()=>{cur=Math.min(cur+step,target);el.textContent=Math.round(cur)+suffix;if(cur>=target)clearInterval(t);},18);
+    });
+  }
+},{threshold:0.5});
+const statsEl=document.querySelector('.stats');if(statsEl)statsObs.observe(statsEl);
+
+// ===== CART STATE =====
+let cartProduct='',cartPrice=0,cartTags=[];
+let discountApplied=false;
+const VALID_COUPON='AJSNW-BLAST-8181';
+const COUPON_EXPIRY=new Date('2026-02-27');
+
+function openCart(name,price,orig,img,tags){
+  cartProduct=name;cartPrice=parseFloat(price);cartTags=tags;discountApplied=false;
+  document.getElementById('cartImg').src=img;
+  document.getElementById('cartItemName').textContent=name;
+  document.getElementById('cartItemPrice').textContent='R$ '+cartPrice.toFixed(2).replace('.',',');
+  document.getElementById('subtotalVal').textContent='R$ '+cartPrice.toFixed(2).replace('.',',');
+  document.getElementById('totalVal').textContent='R$ '+cartPrice.toFixed(2).replace('.',',');
+  document.getElementById('cartItemTags').innerHTML=tags.map(t=>`<div class="cart-item-tag">${t}</div>`).join('');
+  ['emailInput','emailConfirm','couponInput'].forEach(id=>document.getElementById(id).value='');
+  ['emailErr','discountOk','couponErr'].forEach(id=>document.getElementById(id).classList.remove('show'));
+  document.getElementById('discountRow').style.display='none';
+  showModal('cartModal');
+}
+
+function applyCoupon(){
+  const val=document.getElementById('couponInput').value.trim().toUpperCase();
+  document.getElementById('discountOk').classList.remove('show');
+  document.getElementById('couponErr').classList.remove('show');
+  if(val===VALID_COUPON&&new Date()<COUPON_EXPIRY){
+    discountApplied=true;
+    const disc=cartPrice*0.05,total=cartPrice-disc;
+    document.getElementById('discountRow').style.display='flex';
+    document.getElementById('discountVal').textContent='- R$ '+disc.toFixed(2).replace('.',',');
+    document.getElementById('totalVal').textContent='R$ '+total.toFixed(2).replace('.',',');
+    document.getElementById('discountOk').classList.add('show');
+  }else{discountApplied=false;document.getElementById('couponErr').classList.add('show');}
+}
+
+function goToPayment(){
+  const email=document.getElementById('emailInput').value.trim();
+  const confirm=document.getElementById('emailConfirm').value.trim();
+  document.getElementById('emailErr').classList.remove('show');
+  if(!email){showToast('Informe seu e-mail!');return;}
+  if(email!==confirm){document.getElementById('emailErr').classList.add('show');return;}
+  const total=discountApplied?(cartPrice*0.95):cartPrice;
+  document.getElementById('payEmail').value=email;
+  document.getElementById('payTotal').textContent='R$ '+total.toFixed(2).replace('.',',');
+  document.getElementById('summaryProduct').textContent=cartProduct;
+  closeModal('cartModal');showModal('payModal');
+}
+
+function finalizeWhatsApp(){
+  const name=document.getElementById('payName').value.trim();
+  const phone=document.getElementById('payPhone').value.trim();
+  const email=document.getElementById('payEmail').value.trim();
+  if(!name||!phone){showToast('Preencha nome e número!');return;}
+  const total=discountApplied?(cartPrice*0.95):cartPrice;
+  const couponLine=discountApplied?`%0A%F0%9F%8F%B7%EF%B8%8F *Cupom:* ${VALID_COUPON} (-5%)`:'';
+  const msg=`%F0%9F%94%A5 *BLAST MODDER STORE %E2%80%94 NOVO PEDIDO*%0A%0A`+
+    `%F0%9F%91%A4 *Nome:* ${encodeURIComponent(name)}%0A`+
+    `%F0%9F%93%B1 *Telefone:* ${encodeURIComponent(phone)}%0A`+
+    `%F0%9F%93%A7 *E-mail:* ${encodeURIComponent(email)}%0A%0A`+
+    `%F0%9F%9B%92 *Produto:* ${encodeURIComponent(cartProduct)}${couponLine}%0A`+
+    `%F0%9F%92%B0 *Total:* R$ ${total.toFixed(2).replace('.',',')}%0A%0A`+
+    `%E2%9C%85 Aguardo confirmacao do pagamento!`;
+  window.open(`https://wa.me/5512988169644?text=${msg}`,'_blank');
+}
+
+function showModal(id){document.getElementById(id).classList.add('active');document.body.style.overflow='hidden';}
+function closeModal(id){document.getElementById(id).classList.remove('active');if(!document.querySelector('.modal-overlay.active'))document.body.style.overflow='';}
+document.querySelectorAll('.modal-overlay').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)closeModal(m.id);});});
+
+function showToast(msg){document.getElementById('toastMsg').textContent=msg;const t=document.getElementById('toast');t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+</script>
+</body>
+</html>
